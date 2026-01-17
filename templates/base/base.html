@@ -1,0 +1,381 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="" />
+    <meta name="keyword" content="" />
+    <meta name="author" content="flexilecode" />
+    <title>VIT | {% block title %}{% endblock %}</title>
+    <link rel="shortcut icon" href="{% static 'images/logo-abbr.png' %}" />
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'vendors/css/vendors.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/theme.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}" />
+  </head>
+
+  <body>
+    <!--! ================================================================ !-->
+    <!--! [Start] Navigation Manu !-->
+    <!--! ================================================================ !-->
+    <nav class="nxl-navigation">
+      <div class="navbar-wrapper">
+        <div class="m-header">
+          <a href="{% url 'dashboard' %}" class="b-brand">
+            <img
+              src="{% static 'images/logo-full.png' %}"
+              class="logo logo-lg"
+            />
+
+            <img
+              src="{% static 'images/logo-abbr.png' %}"
+              class="logo logo-sm"
+            />
+          </a>
+        </div>
+        <div class="navbar-content">
+          <ul class="nxl-navbar">
+            <!-- Navigation -->
+            <li class="nxl-item nxl-caption">
+              <label>Navigation</label>
+            </li>
+
+            <!-- Dashboard -->
+            <li class="nxl-item">
+              <a class="nxl-link" href="{% url 'dashboard' %}">
+                <span class="nxl-micon"><i class="feather-home"></i></span>
+                <span class="nxl-mtext">Dashboard</span>
+              </a>
+            </li>
+
+            <!-- Academic Management -->
+            <li class="nxl-item nxl-hasmenu">
+              <a href="javascript:void(0);" class="nxl-link">
+                <span class="nxl-micon"><i class="feather-book"></i></span>
+                <span class="nxl-mtext">Academics</span>
+                <span class="nxl-arrow">
+                  <i class="feather-chevron-right"></i>
+                </span>
+              </a>
+              <ul class="nxl-submenu">
+                <li class="nxl-item">
+                  <a class="nxl-link" href="#">Departments</a>
+                </li>
+                <li class="nxl-item">
+                  <a class="nxl-link" href="#">Degree Programs</a>
+                </li>
+                <li class="nxl-item">
+                  <a class="nxl-link" href="#">Courses</a>
+                </li>
+                <li class="nxl-item">
+                  <a class="nxl-link" href="#">Semesters</a>
+                </li>
+              </ul>
+            </li>
+
+            <!-- User Management -->
+            <li class="nxl-item nxl-hasmenu">
+              <a href="javascript:void(0);" class="nxl-link">
+                <span class="nxl-micon"><i class="feather-users"></i></span>
+                <span class="nxl-mtext">Users</span>
+                <span class="nxl-arrow">
+                  <i class="feather-chevron-right"></i>
+                </span>
+              </a>
+              <ul class="nxl-submenu">
+                <li class="nxl-item">
+                  <a class="nxl-link" href="#">Students</a>
+                </li>
+                <li class="nxl-item">
+                  <a class="nxl-link" href="#">Department Admins</a>
+                </li>
+              </ul>
+            </li>
+
+            <!-- Enrollment Management -->
+            <li class="nxl-item nxl-hasmenu">
+              <a href="javascript:void(0);" class="nxl-link">
+                <span class="nxl-micon"
+                  ><i class="feather-check-square"></i
+                ></span>
+                <span class="nxl-mtext">Enrollment</span>
+                <span class="nxl-arrow">
+                  <i class="feather-chevron-right"></i>
+                </span>
+              </a>
+              <ul class="nxl-submenu">
+                <li class="nxl-item">
+                  <a class="nxl-link" href="#">Course Enrollments</a>
+                </li>
+                <li class="nxl-item">
+                  <a class="nxl-link" href="#">Enrollment Status</a>
+                </li>
+              </ul>
+            </li>
+
+            <!-- Reports -->
+            <li class="nxl-item nxl-hasmenu">
+              <a href="javascript:void(0);" class="nxl-link">
+                <span class="nxl-micon"
+                  ><i class="feather-bar-chart-2"></i
+                ></span>
+                <span class="nxl-mtext">Reports</span>
+                <span class="nxl-arrow">
+                  <i class="feather-chevron-right"></i>
+                </span>
+              </a>
+              <ul class="nxl-submenu">
+                <li class="nxl-item">
+                  <a class="nxl-link" href="#">Enrollment Reports</a>
+                </li>
+                <li class="nxl-item">
+                  <a class="nxl-link" href="#">Course Reports</a>
+                </li>
+                <li class="nxl-item">
+                  <a class="nxl-link" href="#">Student Reports</a>
+                </li>
+              </ul>
+            </li>
+
+            <!-- Course Enrollment -->
+            <li class="nxl-item nxl-hasmenu">
+              <a href="javascript:void(0);" class="nxl-link">
+                <span class="nxl-micon"><i class="feather-book-open"></i></span>
+                <span class="nxl-mtext">My Courses</span>
+                <span class="nxl-arrow">
+                  <i class="feather-chevron-right"></i>
+                </span>
+              </a>
+              <ul class="nxl-submenu">
+                <li class="nxl-item">
+                  <a class="nxl-link" href="#">Enroll Courses</a>
+                </li>
+                <li class="nxl-item">
+                  <a class="nxl-link" href="#">Enrolled Courses</a>
+                </li>
+              </ul>
+            </li>
+
+            <!-- Enrollment History -->
+            <li class="nxl-item">
+              <a class="nxl-link" href="#">
+                <span class="nxl-micon"><i class="feather-clock"></i></span>
+                <span class="nxl-mtext">Enrollment History</span>
+              </a>
+            </li>
+
+            <!-- Profile -->
+            <li class="nxl-item">
+              <a class="nxl-link" href="#">
+                <span class="nxl-micon"><i class="feather-user"></i></span>
+                <span class="nxl-mtext">My Profile</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <!--! ================================================================ !-->
+    <!--! [End]  Navigation Manu !-->
+    <!--! ================================================================ !-->
+
+    <!--! ================================================================ !-->
+    <!--! [Start] Header !-->
+    <!--! ================================================================ !-->
+    <header class="nxl-header">
+      <div class="header-wrapper">
+        <!--! [Start] Header Left !-->
+        <div class="header-left d-flex align-items-center gap-4">
+          <!--! [Start] nxl-head-mobile-toggler !-->
+          <a
+            href="javascript:void(0);"
+            class="nxl-head-mobile-toggler"
+            id="mobile-collapse"
+          >
+            <div class="hamburger hamburger--arrowturn">
+              <div class="hamburger-box">
+                <div class="hamburger-inner"></div>
+              </div>
+            </div>
+          </a>
+          <!--! [Start] nxl-head-mobile-toggler !-->
+          <!--! [Start] nxl-navigation-toggle !-->
+          <div class="nxl-navigation-toggle">
+            <a href="javascript:void(0);" id="menu-mini-button">
+              <i class="feather-align-left"></i>
+            </a>
+            <a
+              href="javascript:void(0);"
+              id="menu-expend-button"
+              style="display: none"
+            >
+              <i class="feather-arrow-right"></i>
+            </a>
+          </div>
+          <!--! [End] nxl-navigation-toggle !-->
+          <!--! [Start] nxl-lavel-mega-menu-toggle !-->
+          <div class="nxl-lavel-mega-menu-toggle d-flex d-lg-none">
+            <a href="javascript:void(0);" id="nxl-lavel-mega-menu-open">
+              <i class="feather-align-left"></i>
+            </a>
+          </div>
+          <!--! [End] nxl-lavel-mega-menu-toggle !-->
+        </div>
+        <!--! [End] Header Left !-->
+        <!--! [Start] Header Right !-->
+        <div class="header-right ms-auto">
+          <div class="d-flex align-items-center">
+            <div class="nxl-h-item d-none d-sm-flex">
+              <div class="full-screen-switcher">
+                <a
+                  href="javascript:void(0);"
+                  class="nxl-head-link me-0"
+                  onclick="$('body').fullScreenHelper('toggle');"
+                >
+                  <i class="feather-maximize maximize"></i>
+                  <i class="feather-minimize minimize"></i>
+                </a>
+              </div>
+            </div>
+            <div class="nxl-h-item dark-light-theme">
+              <a
+                href="javascript:void(0);"
+                class="nxl-head-link me-0 dark-button"
+              >
+                <i class="feather-moon"></i>
+              </a>
+              <a
+                href="javascript:void(0);"
+                class="nxl-head-link me-0 light-button"
+                style="display: none"
+              >
+                <i class="feather-sun"></i>
+              </a>
+            </div>
+
+            <div class="dropdown nxl-h-item">
+              <a
+                href="javascript:void(0);"
+                data-bs-toggle="dropdown"
+                role="button"
+                data-bs-auto-close="outside"
+              >
+                <img
+                  src="{% static 'images/avatar/1.png' %}"
+                  class="img-fluid user-avtar me-0"
+                />
+              </a>
+
+              <div
+                class="dropdown-menu dropdown-menu-end nxl-h-dropdown nxl-user-dropdown"
+              >
+                <!-- User Info -->
+                <div class="dropdown-header">
+                  <div class="d-flex align-items-center">
+                    <img
+                      src="{% static 'images/avatar/default.png' %}"
+                      alt="user-image"
+                      class="img-fluid user-avtar"
+                    />
+                    <div class="ms-2">
+                      <h6 class="text-dark mb-0">John Doe</h6>
+                      <span class="fs-12 fw-medium text-muted">
+                        johndoe@vit.edu
+                      </span>
+                      <div class="fs-12 text-primary">Student</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Profile -->
+                <a href="#" class="dropdown-item">
+                  <i class="feather-user me-2"></i>
+                  <span>My Profile</span>
+                </a>
+
+                <!-- Change Password -->
+                <a href="#" class="dropdown-item">
+                  <i class="feather-lock me-2"></i>
+                  <span>Change Password</span>
+                </a>
+
+                <div class="dropdown-divider"></div>
+
+                <!-- Logout -->
+                <a href="#" class="dropdown-item text-danger">
+                  <i class="feather-log-out me-2"></i>
+                  <span>Logout</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--! [End] Header Right !-->
+      </div>
+    </header>
+    <!--! ================================================================ !-->
+    <!--! [End] Header !-->
+    <!--! ================================================================ !-->
+    <!--! ================================================================ !-->
+    <!--! [Start] Main Content !-->
+    <!--! ================================================================ !-->
+    <main class="nxl-container">
+      <div class="nxl-content">
+        <!-- [ page-header ] start -->
+        <div class="page-header">
+          <div class="page-header-left d-flex align-items-center">
+            <div class="page-header-title">
+              <h5 class="m-b-10">{% block page_title %}{% endblock %}</h5>
+            </div>
+            <ul class="breadcrumb">
+              <li class="breadcrumb-item">
+                <a href="{% url 'dashboard' %}">Home</a>
+              </li>
+              {% block breadcrumb %}{% endblock %}
+            </ul>
+          </div>
+        </div>
+        <!-- [ page-header ] end -->
+        <!-- [ Main Content ] start -->
+        <div class="main-content">
+          {% block content %} {% endblock %}
+          <!-- <div class="row"> -->
+
+          <!-- </div> -->
+        </div>
+        <!-- [ Main Content ] end -->
+      </div>
+      <!-- [ Footer ] start -->
+      <footer class="footer" style="padding: 15px 30px">
+        <p class="fs-11 text-muted fw-medium text-uppercase mb-0 copyright">
+          <span>Copyright ©</span>
+          <script>
+            document.write(new Date().getFullYear());
+          </script>
+        </p>
+        <p class="fs-11 text-muted fw-medium text-uppercase mb-0 copyright">
+          <span>VIT Course Enrollment Portal </span>
+        </p>
+      </footer>
+      <!-- [ Footer ] end -->
+    </main>
+    <!--! ================================================================ !-->
+    <!--! [End] Main Content !-->
+    <!--! ================================================================ !-->
+    <!--! ================================================================ !-->
+    <!--! Footer Script !-->
+    <!--! ================================================================ !-->
+    <!--! BEGIN: Vendors JS !-->
+    <script src="{% static 'vendors/js/vendors.min.js' %}"></script>
+    <!--! END: Vendors JS !-->
+    <!--! BEGIN: Apps Init  !-->
+    <script src="{% static 'js/common-init.min.js' %}"></script>
+    <script src="{% static 'js/dashboard-init.min.js' %}"></script>
+    <!--! END: Apps Init !-->
+    <!--! BEGIN: Theme Customizer  !-->
+    <script src="{% static 'js/theme-customizer-init.min.js' %}"></script>
+    <!--! END: Theme Customizer !-->
+  </body>
+</html>

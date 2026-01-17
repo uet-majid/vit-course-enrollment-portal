@@ -1,0 +1,60 @@
+{% extends "base/base.html" %}
+<!-- prettier-ignore -->
+{% block title %} Dashboard {% endblock %}
+<!-- prettier-ignore -->
+{% block page_title %} Dashboard {% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Dashboard</li>
+{% endblock %}
+<!-- prettier-ignore -->
+{% block content %}
+<!-- [Dashboard Mini Cards] start -->
+<div class="row g-3">
+  <!-- Total Students -->
+  <div class="col-xxl-3 col-md-6">
+    <div class="card card-body bg-primary text-white position-relative">
+      <h3 class="text-reset">1,250</h3>
+      <span class="mt-2">Total Students</span>
+      <div class="position-absolute top-50 end-0 translate-middle opacity-25">
+        <i class="feather-users fs-1"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Departments -->
+  <div class="col-xxl-3 col-md-6">
+    <div class="card card-body bg-success text-white position-relative">
+      <h3 class="text-reset">12</h3>
+      <span class="mt-2">Departments</span>
+      <div class="position-absolute top-50 end-0 translate-middle opacity-25">
+        <i class="feather-grid fs-1"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Degree Programs -->
+  <div class="col-xxl-3 col-md-6">
+    <div class="card card-body bg-warning text-white position-relative">
+      <h3 class="text-reset">28</h3>
+      <span class="mt-2">Degree Programs</span>
+      <div class="position-absolute top-50 end-0 translate-middle opacity-25">
+        <i class="feather-award fs-1"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total Courses -->
+  <div class="col-xxl-3 col-md-6">
+    <div class="card card-body bg-danger text-white position-relative">
+      <h3 class="text-reset">340</h3>
+      <span class="mt-2">Total Courses</span>
+      <div class="position-absolute top-50 end-0 translate-middle opacity-25">
+        <i class="feather-book-open fs-1"></i>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- [Dashboard Mini Cards] end -->
+
+{% endblock %}
