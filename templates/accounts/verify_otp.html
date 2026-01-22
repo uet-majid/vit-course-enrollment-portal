@@ -1,0 +1,125 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>VIT | Verify Account</title>
+
+    <link rel="shortcut icon" href="{% static 'images/logo-abbr.png' %}" />
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'vendors/css/vendors.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/theme.min.css' %}" />
+
+    <style>
+      .otp-input {
+        height: 45px;
+        font-size: 20px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <main class="auth-minimal-wrapper">
+      <div class="auth-minimal-inner">
+        <div class="minimal-card-wrapper">
+          <div class="card mb-4 mt-5 mx-4 mx-sm-0 position-relative">
+            <!-- Logo -->
+            <div
+              class="wd-50 bg-white p-2 rounded-circle shadow-lg position-absolute translate-middle top-0 start-50"
+            >
+              <img
+                src="{% static 'images/logo-abbr.png' %}"
+                class="img-fluid"
+              />
+            </div>
+
+            <div class="card-body p-sm-5">
+              <h2 class="fs-20 fw-bolder mb-2">Verify Account</h2>
+              <p class="fs-13 text-muted mb-4">
+                Enter the 6-digit OTP sent to your email
+              </p>
+
+              <!-- Messages -->
+              {% if messages %} {% for message in messages %}
+              <div
+                class="alert alert-{{ message.tags }} alert-dismissible fade show"
+              >
+                {{ message }}
+                <button class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
+              {% endfor %} {% endif %}
+
+              <form method="post" class="w-100">
+                {% csrf_token %}
+
+                <!-- OTP Inputs (unchanged behavior) -->
+                <div class="d-flex justify-content-center gap-2 mb-4">
+                  {% for i in "123456" %}
+                  <input
+                    type="text"
+                    maxlength="1"
+                    class="form-control text-center otp-input"
+                    required
+                  />
+                  {% endfor %}
+                </div>
+
+                <input type="hidden" name="otp" id="otpValue" />
+
+                <div class="mt-4">
+                  <button type="submit" class="btn btn-lg btn-primary w-100">
+                    Verify
+                  </button>
+                </div>
+                <div class="text-center mt-3">
+                  <p class="fs-13 text-muted mb-1">Didn’t receive the OTP?</p>
+                  <a
+                    href="{% url 'resend_otp' user.id %}"
+                    class="text-primary fw-semibold"
+                  >
+                    Resend OTP
+                  </a>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="{% static 'vendors/js/vendors.min.js' %}"></script>
+    <script src="{% static 'js/common-init.min.js' %}"></script>
+
+    <script>
+      const inputs = document.querySelectorAll(".otp-input");
+      const otpValue = document.getElementById("otpValue");
+
+      inputs.forEach((input, index) => {
+        input.addEventListener("input", () => {
+          if (input.value && index < inputs.length - 1) {
+            inputs[index + 1].focus();
+          }
+          otpValue.value = Array.from(inputs)
+            .map((i) => i.value)
+            .join("");
+        });
+
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "Backspace" && !input.value && index > 0) {
+            inputs[index - 1].focus();
+          }
+        });
+      });
+    </script>
+
+    <script>
+      setTimeout(function () {
+        const alerts = document.querySelectorAll(".alert");
+        alerts.forEach(function (alert) {
+          const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+          bsAlert.close();
+        });
+      }, 4000);
+    </script>
+  </body>
+</html>

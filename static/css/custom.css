@@ -26,3 +26,10 @@ body {
   max-height: 42px;
   width: auto;
 }
+
+.dataTables_wrapper .row:first-child,
+.dataTables_wrapper .row:last-child {
+  padding: 0px 25px;
+  padding-top: 18px;
+  padding-bottom: 8px;
+}

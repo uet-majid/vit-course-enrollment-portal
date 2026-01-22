@@ -14,6 +14,7 @@ class User(AbstractUser):
     is_verified = models.BooleanField(default=False)
     otp = models.CharField(max_length=6, null=True, blank=True)
     otp_expiry = models.DateTimeField(null=True, blank=True)
+    is_active = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         if self.role in ['SUPER_ADMIN', 'DEPARTMENT_ADMIN']:

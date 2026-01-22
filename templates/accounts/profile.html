@@ -1,0 +1,136 @@
+{% extends "base/base.html" %} {% load static %}
+<!-- prettier-ignore -->
+{% block title %} My Profile {% endblock %} 
+{% block page_title %} My Profile {% endblock %} {% block breadcrumb %}
+<li class="breadcrumb-item active">My Profile</li>
+{% endblock %} {% block content %}
+<div class="row justify-content-center">
+  <div class="col-xl-9 col-lg-10">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <!-- Header -->
+        <div class="d-flex align-items-center mb-4">
+          <div class="me-4 position-relative">
+            {% if request.user.image %}
+            <img
+              src="{{ request.user.image.url }}"
+              class="rounded-circle border"
+              style="width: 90px; height: 90px; object-fit: cover"
+              alt="Profile Image"
+            />
+            {% else %}
+            <img
+              src="{% static 'images/avatar/default.png' %}"
+              class="rounded-circle border"
+              style="width: 90px; height: 90px; object-fit: cover"
+              alt="Profile Image"
+            />
+            {% endif %}
+          </div>
+
+          <div>
+            <h5 class="mb-1 fw-bold">
+              {{ request.user.first_name }} {{ request.user.last_name }}
+            </h5>
+            <div class="text-muted fs-13">{{ request.user.email }}</div>
+            <span class="badge bg-light-primary text-primary mt-2">
+              {{ request.user.role|title }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %} {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+          {{ message }}
+          <button class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endfor %} {% endif %}
+
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+
+          <div class="row g-4">
+            <!-- Left Column -->
+            <div class="col-md-6">
+              <label class="fw-semibold">First Name</label>
+              <div class="input-group">
+                <span class="input-group-text"
+                  ><i class="feather-user"></i
+                ></span>
+                <input
+                  type="text"
+                  name="first_name"
+                  class="form-control"
+                  value="{{ request.user.first_name }}"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="fw-semibold">Last Name</label>
+              <div class="input-group">
+                <span class="input-group-text"
+                  ><i class="feather-user"></i
+                ></span>
+                <input
+                  type="text"
+                  name="last_name"
+                  class="form-control"
+                  value="{{ request.user.last_name }}"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="fw-semibold">Username</label>
+              <div class="input-group">
+                <span class="input-group-text"
+                  ><i class="feather-link"></i
+                ></span>
+                <input
+                  type="text"
+                  class="form-control"
+                  value="{{ request.user.username }}"
+                  readonly
+                />
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label class="fw-semibold">Email</label>
+              <div class="input-group">
+                <span class="input-group-text"
+                  ><i class="feather-mail"></i
+                ></span>
+                <input
+                  type="email"
+                  class="form-control"
+                  value="{{ request.user.email }}"
+                  readonly
+                />
+              </div>
+            </div>
+
+            <!-- Image Upload -->
+            <div class="col-md-12">
+              <label class="fw-semibold">Update Profile Image</label>
+              <input type="file" name="image" class="form-control" />
+              <small class="text-muted"> JPG or PNG, max 2MB </small>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="d-flex justify-content-end mt-4">
+            <button type="submit" class="btn btn-primary px-4">
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

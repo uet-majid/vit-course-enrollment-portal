@@ -1,0 +1,91 @@
+{% extends "base/base.html" %} {% block title %}Department Admins{% endblock %}
+{% block page_title %}Department Admins{% endblock %} {% block content %}
+<div class="card stretch stretch-full">
+  <div class="card-body p-0">
+    <div
+      class="d-flex justify-content-between align-items-center p-4 border-bottom"
+    >
+      <h5 class="fw-bold mb-0">Department Admins</h5>
+      <a href="{% url 'department_admin_add' %}" class="btn btn-primary btn-sm">
+        Add Department Admin
+      </a>
+    </div>
+
+    {% if messages %}
+    <div class="px-4 pt-3">
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+        {{ message }}
+        <button class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="table-responsive">
+      <table class="table table-hover align-middle mb-0" id="adminsTable">
+        <thead class="table-light">
+          <tr>
+            <th>Sr. No.</th>
+            <th>Name</th>
+            <th>Username</th>
+            <th>Department</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for admin in admins %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ admin.user.first_name }} {{ admin.user.last_name }}</td>
+            <td>{{ admin.user.username }}</td>
+            <td>{{ admin.department.name }}</td>
+            <td>
+              {% if admin.user.is_active %}
+              <span class="badge bg-success">Active</span>
+              {% else %}
+              <span class="badge bg-danger">Inactive</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="hstack gap-2">
+                <a
+                  href="{% url 'department_admin_edit' admin.id %}"
+                  class="avatar-text avatar-md"
+                >
+                  <i class="feather-edit"></i>
+                </a>
+                <a
+                  href="{% url 'department_admin_delete' admin.id %}"
+                  class="avatar-text avatar-md text-danger"
+                >
+                  <i class="feather-trash-2"> </i>
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    if (!$.fn.DataTable.isDataTable("#adminsTable")) {
+      $("#adminsTable").DataTable({
+        pageLength: 10,
+        responsive: true,
+        columnDefs: [{ orderable: false, targets: [-1] }],
+      });
+    }
+  });
+  $("#adminsTable").DataTable({
+    language: {
+      emptyTable: "No department admins found",
+    },
+  });
+</script>
+{% endblock %} {% endblock %}

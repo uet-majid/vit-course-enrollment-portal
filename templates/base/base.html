@@ -14,6 +14,10 @@
     <link rel="stylesheet" href="{% static 'vendors/css/vendors.min.css' %}" />
     <link rel="stylesheet" href="{% static 'css/theme.min.css' %}" />
     <link rel="stylesheet" href="{% static 'css/custom.css' %}" />
+    <link
+      rel="stylesheet"
+      href="{% static 'vendors/css/dataTables.bs5.min.css' %}"
+    />
   </head>
 
   <body>
@@ -61,16 +65,21 @@
               </a>
               <ul class="nxl-submenu">
                 <li class="nxl-item">
-                  <a class="nxl-link" href="#">Departments</a>
+                  <!-- prettier-ignore -->
+                  <a class="nxl-link" href="{% url 'department_list' %}">Departments</a>
                 </li>
                 <li class="nxl-item">
-                  <a class="nxl-link" href="#">Degree Programs</a>
+                  <a class="nxl-link" href="{% url 'degree_program_list' %}"
+                    >Degree Programs</a
+                  >
                 </li>
                 <li class="nxl-item">
-                  <a class="nxl-link" href="#">Courses</a>
+                  <a class="nxl-link" href="{% url 'course_list' %}">Courses</a>
                 </li>
                 <li class="nxl-item">
-                  <a class="nxl-link" href="#">Semesters</a>
+                  <a class="nxl-link" href="{% url 'semester_list' %}"
+                    >Semesters</a
+                  >
                 </li>
               </ul>
             </li>
@@ -86,10 +95,14 @@
               </a>
               <ul class="nxl-submenu">
                 <li class="nxl-item">
-                  <a class="nxl-link" href="#">Students</a>
+                  <a class="nxl-link" href="{% url 'student_list' %}"
+                    >Students</a
+                  >
                 </li>
                 <li class="nxl-item">
-                  <a class="nxl-link" href="#">Department Admins</a>
+                  <a class="nxl-link" href="{% url 'department_admin_list' %}"
+                    >Department Admins</a
+                  >
                 </li>
               </ul>
             </li>
@@ -168,7 +181,7 @@
 
             <!-- Profile -->
             <li class="nxl-item">
-              <a class="nxl-link" href="#">
+              <a class="nxl-link" href="{% url 'profile' %}">
                 <span class="nxl-micon"><i class="feather-user"></i></span>
                 <span class="nxl-mtext">My Profile</span>
               </a>
@@ -263,8 +276,9 @@
                 data-bs-auto-close="outside"
               >
                 <img
-                  src="{% static 'images/avatar/1.png' %}"
+                  src="{% if request.user.image %}{{ request.user.image.url }}{% else %}{% static 'images/avatar/default.png' %}{% endif %}"
                   class="img-fluid user-avtar me-0"
+                  alt="User Avatar"
                 />
               </a>
 
@@ -275,28 +289,33 @@
                 <div class="dropdown-header">
                   <div class="d-flex align-items-center">
                     <img
-                      src="{% static 'images/avatar/default.png' %}"
+                      src="{% if request.user.image %}{{ request.user.image.url }}{% else %}{% static 'images/avatar/default.png' %}{% endif %}"
                       alt="user-image"
                       class="img-fluid user-avtar"
                     />
                     <div class="ms-2">
-                      <h6 class="text-dark mb-0">John Doe</h6>
+                      <h6 class="text-dark mb-0">
+                        <!-- prettier-ignore -->
+                        {{ request.user.first_name }} {{ request.user.last_name }}
+                      </h6>
                       <span class="fs-12 fw-medium text-muted">
-                        johndoe@vit.edu
+                        {{ request.user.email }}
                       </span>
-                      <div class="fs-12 text-primary">Student</div>
+                      <div class="fs-12 text-primary">
+                        {{ request.user.role }}
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <!-- Profile -->
-                <a href="#" class="dropdown-item">
+                <a href="{% url 'profile' %}" class="dropdown-item">
                   <i class="feather-user me-2"></i>
                   <span>My Profile</span>
                 </a>
 
                 <!-- Change Password -->
-                <a href="#" class="dropdown-item">
+                <a href="{% url 'change_password' %}" class="dropdown-item">
                   <i class="feather-lock me-2"></i>
                   <span>Change Password</span>
                 </a>
@@ -304,7 +323,7 @@
                 <div class="dropdown-divider"></div>
 
                 <!-- Logout -->
-                <a href="#" class="dropdown-item text-danger">
+                <a href="{% url 'logout' %}" class="dropdown-item text-danger">
                   <i class="feather-log-out me-2"></i>
                   <span>Logout</span>
                 </a>
@@ -369,6 +388,8 @@
     <!--! ================================================================ !-->
     <!--! BEGIN: Vendors JS !-->
     <script src="{% static 'vendors/js/vendors.min.js' %}"></script>
+    <script src="{% static 'vendors/js/dataTables.min.js' %}"></script>
+    <script src="{% static 'vendors/js/dataTables.bs5.min.js' %}"></script>
     <!--! END: Vendors JS !-->
     <!--! BEGIN: Apps Init  !-->
     <script src="{% static 'js/common-init.min.js' %}"></script>
@@ -377,5 +398,16 @@
     <!--! BEGIN: Theme Customizer  !-->
     <script src="{% static 'js/theme-customizer-init.min.js' %}"></script>
     <!--! END: Theme Customizer !-->
+    <script>
+      // Auto-dismiss alerts after 4 seconds
+      //   setTimeout(function () {
+      //     const alerts = document.querySelectorAll(".alert");
+      //     alerts.forEach(function (alert) {
+      //       const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+      //       bsAlert.close();
+      //     });
+      //   }, 4000);
+    </script>
+    {% block extra_js %}{% endblock %}
   </body>
 </html>

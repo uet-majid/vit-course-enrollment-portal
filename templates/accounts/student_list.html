@@ -1,0 +1,113 @@
+{% extends "base/base.html" %} {% block title %} Students {% endblock %}
+<!-- prettier-ignore -->
+{% block page_title %} Students {% endblock %} {% block breadcrumb %}
+<li class="breadcrumb-item active">Students</li>
+{% endblock %} {% block content %}
+<div class="row">
+  <div class="col-lg-12">
+    <div class="card stretch stretch-full">
+      <div class="card-body p-0">
+        <div
+          class="d-flex justify-content-between align-items-center p-4 border-bottom"
+        >
+          <h5 class="mb-0 fw-bold">Students</h5>
+          <a href="{% url 'student_add' %}" class="btn btn-primary btn-sm">
+            <i class="feather-plus me-1"></i> Add Student
+          </a>
+        </div>
+
+        {% if messages %}
+        <div class="px-4 pt-3">
+          {% for message in messages %}
+          <div
+            class="alert alert-{{ message.tags }} alert-dismissible fade show"
+          >
+            {{ message }}
+            <button class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0" id="studentTable">
+            <thead class="table-light">
+              <tr>
+                <th>Sr. No.</th>
+                <th>Student ID</th>
+                <th>Name</th>
+                <th>Department</th>
+                <th>Program</th>
+                <th>Student Status</th>
+                <th>Login Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in students %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ s.student_id }}</td>
+                <td>{{ s.user.first_name }} {{ s.user.last_name }}</td>
+                <td>{{ s.department.name }}</td>
+                <td>{{ s.degree_program.name }}</td>
+                <td>
+                  {% if s.is_active %}
+                  <span class="badge bg-success">Active</span>
+                  {% else %}
+                  <span class="badge bg-danger"
+                    >Inactive (Graduated / Dropped / Suspended)</span
+                  >
+                  {% endif %}
+                </td>
+                <td>
+                  {% if s.user.is_active %}
+                  <span class="badge bg-success">Active</span>
+                  {% else %}
+                  <span class="badge bg-danger">Inactive</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="hstack gap-2">
+                    <a
+                      href="{% url 'student_edit' s.id %}"
+                      class="avatar-text avatar-md"
+                    >
+                      <i class="feather-edit"></i>
+                    </a>
+                    <a
+                      href="{% url 'student_delete' s.id %}"
+                      class="avatar-text avatar-md text-danger"
+                    >
+                      <i class="feather-trash-2"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    if (!$.fn.DataTable.isDataTable("#studentTable")) {
+      $("#studentTable").DataTable({
+        pageLength: 10,
+        responsive: true,
+        columnDefs: [{ orderable: false, targets: [-1] }],
+      });
+    }
+  });
+  $("#studentTable").DataTable({
+    language: {
+      emptyTable: "No students found",
+    },
+  });
+</script>
+{% endblock %} {% endblock %}

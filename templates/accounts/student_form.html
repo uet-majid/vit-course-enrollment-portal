@@ -1,0 +1,234 @@
+{% extends "base/base.html" %}
+<!-- prettier-ignore -->
+{% block title %}{% if student %}Edit{% else %}Add{% endif %} Student{% endblock %}
+<!-- prettier-ignore -->
+{% block page_title %}{% if student %}Edit{% else %}Add{% endif %} Student{% endblock %} 
+{% block breadcrumb %}
+<li class="breadcrumb-item">
+  <a href="{% url 'student_list' %}">Students</a>
+</li>
+<li class="breadcrumb-item active">
+  {% if student %}Edit{% else %}Add{% endif %}
+</li>
+{% endblock %} {% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="fw-bold mb-4">
+          {% if student %}Edit{% else %}Add{% endif %} Student
+        </h5>
+        {% if messages %}
+        <div class="px-4 pt-3">
+          {% for message in messages %}
+          <div
+            class="alert alert-{{ message.tags }} alert-dismissible fade show"
+          >
+            {{ message }}
+            <button class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post">
+          {% csrf_token %} {% if student %}
+          <div class="mb-3">
+            <label class="fw-semibold">Student ID</label>
+            <input
+              type="text"
+              class="form-control"
+              value="{{ student.student_id }}"
+              readonly
+            />
+          </div>
+          {% endif %}
+
+          <div class="mb-3">
+            <label class="fw-semibold">First Name</label>
+            <input
+              type="text"
+              name="first_name"
+              class="form-control mb-3"
+              placeholder="First Name"
+              value="{{ student.user.first_name|default:'' }}"
+              required
+            />
+          </div>
+
+          <div class="mb-3">
+            <label class="fw-semibold">Last Name</label>
+            <input
+              type="text"
+              name="last_name"
+              class="form-control mb-3"
+              placeholder="Last Name"
+              value="{{ student.user.last_name|default:'' }}"
+              required
+            />
+          </div>
+
+          <div class="mb-3">
+            <label class="fw-semibold">Username</label>
+            <input
+              type="text"
+              name="username"
+              class="form-control mb-3"
+              placeholder="Username"
+              {% if student %}
+              readonly
+              {% endif %}
+              value="{{ student.user.username|default:'' }}"
+              required
+            />
+          </div>
+
+          <div class="mb-3">
+            <label class="fw-semibold">Email</label>
+            {% if not student %}
+            <input
+              type="email"
+              name="email"
+              class="form-control mb-3"
+              placeholder="Email"
+              required
+            />
+            {% endif %}
+          </div>
+
+          <div class="mb-3">
+            <label class="fw-semibold">Department</label>
+            <select
+                name="department"
+                id="department"
+                class="form-select"
+                required
+            >
+                    <option value="">Select Department</option>
+                    {% for dept in departments %}
+                    <option
+                    value="{{ dept.id }}"
+                    {% if student and student.department_id == dept.id %}selected{% endif %}>
+                    {{ dept.name }}
+                    </option>
+                    {% endfor %}
+            </select>
+          </div>
+
+
+          <div class="mb-3">
+            <label class="fw-semibold">Degree Program</label>
+            <select
+              name="degree_program"
+              id="degree_program"
+              class="form-select mt-3"
+              required
+            >
+              <option value="">Select Degree Program</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="fw-semibold">Enrollment Year</label>
+            <input
+              type="number"
+              name="enrollment_year"
+              class="form-control mb-3"
+              placeholder="Enrollment Year"
+              min="2000"
+              value="{{ student.enrollment_year|default:'' }}"
+              required
+            />
+          </div>
+
+          {% if student %}
+          <div class="mb-3">
+            <label class="fw-semibold">Login Access</label>
+            <select name="user_is_active" class="form-select">
+                <!-- prettier-ignore -->
+                <option value="1" {% if student.user.is_active %}selected{% endif %}>Enabled (Can Login)</option>
+                <!-- prettier-ignore -->
+                <option value="0" {% if not student.user.is_active %}selected{% endif %}>Disabled (Login Blocked)</option>
+            </select>
+            <small class="text-muted">
+                Disabling login will prevent the student from accessing the portal.
+            </small>
+          </div>
+          {% endif %}
+
+          {% if student %}
+          <div class="mb-3">
+            <label class="fw-semibold">Student Status</label>
+            <select name="student_is_active" class="form-select">
+              <!-- prettier-ignore -->
+              <option value="1" {% if student and student.is_active %}selected{% endif %}>Active</option>
+              <!-- prettier-ignore -->
+              <option value="0" {% if student and not student.is_active %}selected{% endif %}>Inactive (Graduated / Dropped / Suspended)</option>
+            </select>
+            <small class="text-muted">
+                Inactive students remain in records but are academically inactive.
+            </small>
+          </div>
+          {% endif %}
+
+          <div class="d-flex justify-content-center gap-3">
+            <button type="submit" class="btn btn-primary px-4">Save</button>
+            <a href="{% url 'student_list' %}" class="btn btn-light px-4"
+              >Cancel</a
+            >
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% block extra_js %}
+<script>
+  const departmentSelect = document.getElementById("department");
+  const programSelect = document.getElementById("degree_program");
+
+  // values from backend (empty on add, filled on edit)
+  const selectedDepartmentId = "{{ student.department_id|default:'' }}";
+  const selectedProgramId = "{{ student.degree_program_id|default:'' }}";
+
+  function loadDegreePrograms(departmentId, selectedProgram = null) {
+    if (!departmentId) {
+      programSelect.innerHTML =
+        '<option value="">Select Degree Program</option>';
+      return;
+    }
+
+    programSelect.innerHTML = '<option value="">Loading...</option>';
+
+    fetch(`/ajax/degree-programs/?department_id=${departmentId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        programSelect.innerHTML =
+          '<option value="">Select Degree Program</option>';
+
+        data.forEach((p) => {
+          const option = document.createElement("option");
+          option.value = p.id;
+          option.textContent = p.name;
+
+          if (selectedProgram && Number(selectedProgram) === p.id) {
+            option.selected = true;
+          }
+
+          programSelect.appendChild(option);
+        });
+      });
+  }
+
+  // On department change (add + edit)
+  departmentSelect.addEventListener("change", function () {
+    loadDegreePrograms(this.value, null);
+  });
+
+  // On edit page load
+  if (selectedDepartmentId) {
+    loadDegreePrograms(selectedDepartmentId, selectedProgramId);
+  }
+</script>
+
+{% endblock %} {% endblock %}

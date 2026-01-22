@@ -1,0 +1,134 @@
+{% extends "base/base.html" %}
+<!-- prettier-ignore -->
+{% block title %}{% if semester %}Edit{% else %}Add{% endif %} Semester {% endblock %}
+<!-- prettier-ignore -->
+{% block page_title %} {% if semester %}Edit{% else %}Add{% endif %} Semester {% endblock %} {% block breadcrumb %}
+<li class="breadcrumb-item">
+  <a href="{% url 'semester_list' %}">Semesters</a>
+</li>
+<li class="breadcrumb-item active">
+  {% if semester %}Edit{% else %}Add{% endif %}
+</li>
+{% endblock %} {% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="fw-bold mb-4">
+          {% if semester %}Edit{% else %}Add{% endif %} Semester
+        </h5>
+
+        <form method="post">
+          {% csrf_token %}
+
+          <div class="mb-3">
+            <label class="fw-semibold">Semester Name</label>
+            <input
+              type="text"
+              name="name"
+              class="form-control"
+              placeholder="e.g. Fall 2026"
+              value="{{ semester.name|default:'' }}"
+              required
+            />
+          </div>
+
+          <div class="mb-3">
+            <label class="fw-semibold">Start Date</label>
+            <input
+              type="date"
+              name="start_date"
+              class="form-control"
+              value="{{ semester.start_date|date:'Y-m-d' }}"
+              required
+            />
+          </div>
+
+          <div class="mb-3">
+            <label class="fw-semibold">End Date</label>
+            <input
+              type="date"
+              name="end_date"
+              class="form-control"
+              value="{{ semester.end_date|date:'Y-m-d' }}"
+              required
+            />
+          </div>
+
+          <div class="mb-3">
+            <label class="fw-semibold">Enrollment Open Date</label>
+            <input
+              type="date"
+              name="enrollment_open_date"
+              class="form-control"
+              value="{{ semester.enrollment_open_date|date:'Y-m-d' }}"
+              required
+            />
+          </div>
+
+          <div class="mb-4">
+            <label class="fw-semibold">Enrollment Close Date</label>
+            <input
+              type="date"
+              name="enrollment_close_date"
+              class="form-control"
+              value="{{ semester.enrollment_close_date|date:'Y-m-d' }}"
+              required
+            />
+          </div>
+
+          <div class="mb-4">
+            <label class="fw-semibold">Status</label>
+            <select name="is_active" class="form-select">
+              <!-- prettier-ignore -->
+              <option value="1" {% if not semester or semester.is_active %}selected{% endif %}> Active </option>
+              <!-- prettier-ignore -->
+              <option value="0" {% if semester and not semester.is_active %}selected{% endif %}>Inactive</option>
+            </select>
+          </div>
+
+          <div class="d-flex justify-content-center gap-3">
+            <button type="submit" class="btn btn-primary px-4">Save</button>
+            <a href="{% url 'semester_list' %}" class="btn btn-light px-4"
+              >Cancel</a
+            >
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const startDate = document.querySelector('input[name="start_date"]');
+    const endDate = document.querySelector('input[name="end_date"]');
+
+    const enrollOpen = document.querySelector(
+      'input[name="enrollment_open_date"]'
+    );
+    const enrollClose = document.querySelector(
+      'input[name="enrollment_close_date"]'
+    );
+
+    function syncMinDates(fromField, toField) {
+      if (fromField.value) {
+        toField.min = fromField.value;
+      }
+    }
+
+    // Initial load (important for edit case)
+    syncMinDates(startDate, endDate);
+    syncMinDates(enrollOpen, enrollClose);
+
+    // On change
+    startDate.addEventListener("change", function () {
+      syncMinDates(startDate, endDate);
+    });
+
+    enrollOpen.addEventListener("change", function () {
+      syncMinDates(enrollOpen, enrollClose);
+    });
+  });
+</script>
+{% endblock %} {% endblock %}

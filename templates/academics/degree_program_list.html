@@ -1,0 +1,111 @@
+{% extends "base/base.html" %} {% block title %} Degree Programs {% endblock %}
+{% block page_title %} Degree Programs {% endblock %} {% block breadcrumb %}
+<li class="breadcrumb-item active">Degree Programs</li>
+{% endblock %} {% block content %}
+<div class="row">
+  <div class="col-lg-12">
+    <div class="card stretch stretch-full">
+      <div class="card-body p-0">
+        <div
+          class="d-flex justify-content-between align-items-center p-4 border-bottom"
+        >
+          <h5 class="mb-0 fw-bold">Degree Programs</h5>
+          <a
+            href="{% url 'degree_program_add' %}"
+            class="btn btn-primary btn-sm"
+          >
+            <i class="feather-plus me-1"></i> Add Program
+          </a>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="px-4 pt-3">
+          {% for message in messages %}
+          <div
+            class="alert alert-{{ message.tags }} alert-dismissible fade show"
+          >
+            {{ message }}
+            <button class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="table-responsive">
+          <table
+            class="table table-hover align-middle mb-0"
+            id="degreeProgramTable"
+          >
+            <thead class="table-light">
+              <tr>
+                <th>Sr. No.</th>
+                <th>Program Name</th>
+                <th>Level</th>
+                <th>Duration (Years)</th>
+                <th>Department</th>
+                <th>Status</th>
+                <th>Created At</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for program in programs %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td class="fw-semibold">{{ program.name }}</td>
+                <td>{{ program.level }}</td>
+                <td>{{ program.duration_years }}</td>
+                <td>{{ program.department.name }}</td>
+                <td>
+                  {% if program.is_active %}
+                  <span class="badge bg-success">Active</span>
+                  {% else %}
+                  <span class="badge bg-danger">Inactive</span>
+                  {% endif %}
+                </td>
+                <td>{{ program.created_at|date:"d-m-Y" }}</td>
+                <td>
+                  <div class="hstack gap-2">
+                    <a
+                      href="{% url 'degree_program_edit' program.id %}"
+                      class="avatar-text avatar-md"
+                    >
+                      <i class="feather-edit"></i>
+                    </a>
+                    <a
+                      href="{% url 'degree_program_delete' program.id %}"
+                      class="avatar-text avatar-md text-danger"
+                    >
+                      <i class="feather-trash-2"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    if (!$.fn.DataTable.isDataTable("#degreeProgramTable")) {
+      $("#degreeProgramTable").DataTable({
+        pageLength: 10,
+        ordering: true,
+        responsive: true,
+        columnDefs: [{ orderable: false, targets: [0, -1] }],
+      });
+    }
+  });
+  $("#degreeProgramTable").DataTable({
+    language: {
+      emptyTable: "No degree programs found",
+    },
+  });
+</script>
+{% endblock %} {% endblock %}

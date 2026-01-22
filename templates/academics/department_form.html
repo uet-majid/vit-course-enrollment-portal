@@ -1,0 +1,85 @@
+{% extends "base/base.html" %}
+<!-- prettier-ignore -->
+{% block title %}{% if department %}Edit{% else %}Add{% endif %} Department {% endblock %}
+<!-- prettier-ignore -->
+{% block page_title %} {% if department %}Edit{% else %}Add{% endif %} Department {% endblock %} 
+{% block breadcrumb %}
+<li class="breadcrumb-item">
+  <a href="{% url 'department_list' %}">Departments</a>
+</li>
+<li class="breadcrumb-item active">
+  {% if department %}Edit{% else %}Add{% endif %}
+</li>
+{% endblock %} {% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h5 class="fw-bold mb-4">
+          {% if department %}Edit{% else %}Add{% endif %} Department
+        </h5>
+
+        <form method="post">
+          {% csrf_token %}
+
+          <!-- Department Name -->
+          <div class="mb-3">
+            <label class="fw-semibold">Department Name</label>
+            <input
+              type="text"
+              name="name"
+              class="form-control"
+              placeholder="e.g. Computer Science"
+              value="{{ department.name|default:'' }}"
+              required
+            />
+          </div>
+
+          <!-- Department Code -->
+          <div class="mb-3">
+            <label class="fw-semibold">Department Code</label>
+            <input
+              type="text"
+              name="code"
+              class="form-control"
+              placeholder="e.g. CSE"
+              value="{{ department.code|default:'' }}"
+              required
+            />
+          </div>
+
+          <!-- Status -->
+          <div class="mb-4">
+            <label class="fw-semibold">Status</label>
+            <select name="is_active" class="form-select">
+              <!-- prettier-ignore -->
+              <option value="1" {% if not department or department.is_active %}selected{% endif %}>
+                Active
+              </option>
+              <!-- prettier-ignore -->
+              <option value="0" {% if department and not department.is_active %}selected{% endif %}>
+                Inactive
+              </option>
+            </select>
+          </div>
+
+          <!-- Buttons -->
+          <div class="row">
+            <div class="col-lg-12">
+              <div class="d-flex justify-content-center gap-3">
+                <button type="submit" class="btn btn-primary px-4">Save</button>
+                <a
+                  href="{% url 'department_list' %}"
+                  class="btn btn-light px-4"
+                >
+                  Cancel
+                </a>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
