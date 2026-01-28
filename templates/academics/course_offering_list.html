@@ -1,0 +1,101 @@
+{% extends "base/base.html" %}
+
+{% block title %}Course Offerings{% endblock %}
+{% block page_title %}Course Offerings{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Course Offerings</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="col-lg-12">
+    <div class="card stretch stretch-full">
+      <div class="card-body p-0">
+        <div class="d-flex justify-content-between align-items-center p-4 border-bottom">
+          <h5 class="fw-bold mb-0">Course Offerings</h5>
+          <a href="{% url 'course_offering_add' %}" class="btn btn-primary btn-sm">
+            <i class="feather-plus me-1"></i> Add Course Offering
+          </a>
+        </div>
+
+        {% if messages %}
+        <div class="px-4 pt-3">
+          {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+            {{ message }}
+            <button class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0" id="courseOfferingTable">
+            <thead class="table-light">
+              <tr>
+                <th>Sr. No.</th>
+                <th>Course Code</th>
+                <th>Course Name</th>
+                <th>Department</th>
+                <th>Semester</th>
+                <th>Current Enrollment</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for offering in offerings %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ offering.course.course_code }}</td>
+                <td>{{ offering.course.course_name }}</td>
+                <td>{{ offering.course.department.name }}</td>
+                <td>{{ offering.semester.name }}</td>
+                <td>{{ offering.current_enrollment }}</td>
+                <td>
+                  {% if offering.is_active %}
+                  <span class="badge bg-success">Active</span>
+                  {% else %}
+                  <span class="badge bg-danger">Inactive</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <div class="hstack gap-2">
+                    <a href="{% url 'course_offering_edit' offering.id %}" class="avatar-text avatar-md">
+                      <i class="feather-edit"></i>
+                    </a>
+                    <a href="{% url 'course_offering_delete' offering.id %}" class="avatar-text avatar-md text-danger" onclick="return confirm('Are you sure?')">
+                      <i class="feather-trash-2"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    if (!$.fn.DataTable.isDataTable("#courseOfferingTable")) {
+      $("#courseOfferingTable").DataTable({
+        pageLength: 10,
+        ordering: true,
+        responsive: true,
+        columnDefs: [{ orderable: false, targets: [-1] }],
+        language: {
+          emptyTable: "No course offerings found",
+        },
+      });
+    }
+  });
+</script>
+{% endblock %}
+
+{% endblock %}

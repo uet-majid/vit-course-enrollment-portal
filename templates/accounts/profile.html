@@ -34,7 +34,7 @@
             </h5>
             <div class="text-muted fs-13">{{ request.user.email }}</div>
             <span class="badge bg-light-primary text-primary mt-2">
-              {{ request.user.role|title }}
+              {{ request.user.get_role_display }}
             </span>
           </div>
         </div>

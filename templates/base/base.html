@@ -55,6 +55,7 @@
             </li>
 
             <!-- Academic Management -->
+            {% if request.user.role in "SUPER_ADMIN,DEPARTMENT_ADMIN" %}
             <li class="nxl-item nxl-hasmenu">
               <a href="javascript:void(0);" class="nxl-link">
                 <span class="nxl-micon"><i class="feather-book"></i></span>
@@ -64,6 +65,7 @@
                 </span>
               </a>
               <ul class="nxl-submenu">
+                {% if request.user.role == "SUPER_ADMIN" %}
                 <li class="nxl-item">
                   <!-- prettier-ignore -->
                   <a class="nxl-link" href="{% url 'department_list' %}">Departments</a>
@@ -74,12 +76,13 @@
                   >
                 </li>
                 <li class="nxl-item">
-                  <a class="nxl-link" href="{% url 'course_list' %}">Courses</a>
-                </li>
-                <li class="nxl-item">
                   <a class="nxl-link" href="{% url 'semester_list' %}"
                     >Semesters</a
                   >
+                </li>
+                {% endif %}
+                <li class="nxl-item">
+                  <a class="nxl-link" href="{% url 'course_list' %}">Courses</a>
                 </li>
               </ul>
             </li>
@@ -99,11 +102,13 @@
                     >Students</a
                   >
                 </li>
+                {% if request.user.role == "SUPER_ADMIN" %}
                 <li class="nxl-item">
                   <a class="nxl-link" href="{% url 'department_admin_list' %}"
                     >Department Admins</a
                   >
                 </li>
+                {% endif %}
               </ul>
             </li>
 
@@ -120,10 +125,10 @@
               </a>
               <ul class="nxl-submenu">
                 <li class="nxl-item">
-                  <a class="nxl-link" href="#">Course Enrollments</a>
+                  <a class="nxl-link" href="{% url 'course_offering_list' %}">Course Offerings</a>
                 </li>
                 <li class="nxl-item">
-                  <a class="nxl-link" href="#">Enrollment Status</a>
+                  <a class="nxl-link" href="{% url 'enrollment_list' %}">Course Enrollments</a>
                 </li>
               </ul>
             </li>
@@ -151,7 +156,9 @@
                 </li>
               </ul>
             </li>
+            {% endif %}
 
+            {% if request.user.role == "STUDENT" %}
             <!-- Course Enrollment -->
             <li class="nxl-item nxl-hasmenu">
               <a href="javascript:void(0);" class="nxl-link">
@@ -163,27 +170,28 @@
               </a>
               <ul class="nxl-submenu">
                 <li class="nxl-item">
-                  <a class="nxl-link" href="#">Enroll Courses</a>
+                  <a class="nxl-link" href="{% url 'student_course_enrollment' %}">Enroll Courses</a>
                 </li>
                 <li class="nxl-item">
-                  <a class="nxl-link" href="#">Enrolled Courses</a>
+                  <a class="nxl-link" href="{% url 'student_my_courses' %}">My Enrollments</a>
                 </li>
               </ul>
             </li>
-
-            <!-- Enrollment History -->
-            <li class="nxl-item">
-              <a class="nxl-link" href="#">
-                <span class="nxl-micon"><i class="feather-clock"></i></span>
-                <span class="nxl-mtext">Enrollment History</span>
-              </a>
-            </li>
+            {% endif %}
 
             <!-- Profile -->
             <li class="nxl-item">
               <a class="nxl-link" href="{% url 'profile' %}">
                 <span class="nxl-micon"><i class="feather-user"></i></span>
                 <span class="nxl-mtext">My Profile</span>
+              </a>
+            </li>
+
+            <!-- logout -->
+            <li class="nxl-item">
+              <a class="nxl-link" href="{% url 'logout' %}">
+                <span class="nxl-micon"><i class="feather-log-out"></i></span>
+                <span class="nxl-mtext">Logout</span>
               </a>
             </li>
           </ul>
@@ -302,7 +310,7 @@
                         {{ request.user.email }}
                       </span>
                       <div class="fs-12 text-primary">
-                        {{ request.user.role }}
+                        {{ request.user.get_role_display }}
                       </div>
                     </div>
                   </div>

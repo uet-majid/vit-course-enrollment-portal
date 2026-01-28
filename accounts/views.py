@@ -2,25 +2,102 @@ from django.contrib.auth import authenticate, login, logout, get_user_model, upd
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
+from django.db.models import Q, Sum
 from django.utils.crypto import get_random_string
 from django.core.mail import send_mail
 from django.conf import settings
 from django.db import transaction
 from django.utils import timezone
 from django.http import JsonResponse
+from enrollment.models import Enrollment
 from .models import Student, User, DepartmentAdmin
-from academics.models import Department, DegreeProgram
+from academics.models import Department, DegreeProgram, Course, Semester
 import random
 from datetime import timedelta
 from django.urls import reverse
+from accounts.decorators import guest_only, student_required, super_admin_required, department_admin_required, admin_required
 
 User = get_user_model()
 
 @login_required(login_url='login')
 def dashboard(request):
-    return render(request, 'accounts/dashboard.html')
+    user = request.user
 
+    context = {}
+
+    # Active semester (shared for all roles)
+    active_semester = Semester.objects.filter(is_active=True).first()
+
+    if active_semester:
+        context["semester_name"] = active_semester.name
+        context["semester_start"] = active_semester.start_date
+        context["semester_end"] = active_semester.end_date
+        context["enroll_start"] = active_semester.enrollment_open_date
+        context["enroll_end"] = active_semester.enrollment_close_date
+
+    if user.role == "SUPER_ADMIN":
+        # Super Admin sees everything
+        context["total_students"] = Student.objects.count()
+        context["total_departments"] = Department.objects.count()
+        context["total_degree_programs"] = DegreeProgram.objects.count()
+        context["total_courses"] = Course.objects.count()
+        context.update({
+            "department_admin_count": User.objects.filter(
+                role="DEPARTMENT_ADMIN",
+                is_active = True
+            ).count(),
+
+            "active_students": Student.objects.filter(is_active=True).count(),
+
+            "inactive_students": Student.objects.filter(is_active=False).count(),
+        })
+
+    elif user.role == "DEPARTMENT_ADMIN":
+        # Department Admin sees only their department
+        dept = user.departmentadmin.department
+
+        context["department_name"] = dept.name
+        context["total_students"] = Student.objects.filter(department=dept).count()
+        context["total_degree_programs"] = DegreeProgram.objects.filter(department=dept).count()
+        context["total_courses"] = Course.objects.filter(department=dept).count()
+        context.update({
+            "active_students": Student.objects.filter(
+                department=dept,
+                is_active=True
+            ).count(),
+
+            "inactive_students": Student.objects.filter(
+                department=dept,
+                is_active=False
+            ).count(),
+        })
+
+    elif user.role == "STUDENT":
+        student = user.student
+
+        active_semester = Semester.objects.filter(is_active=True).first()
+
+        enrolled_courses_count = 0
+        if active_semester:
+            enrolled_courses_count = Enrollment.objects.filter(
+                student=student,
+                course_offering__semester=active_semester,
+                status="ENROLLED"
+            ).count()
+
+        context.update({
+            "department_name": student.department.name,
+            "degree_program_name": student.degree_program.name,
+            "enrollment_year": student.enrollment_year,
+            "total_courses": Course.objects.filter(
+                department=student.department
+            ).count(),
+            "enrolled_courses_count": enrolled_courses_count,
+        })
+
+    return render(request, 'accounts/dashboard.html', context)
+
+@guest_only
 def login_view(request):
     if request.user.is_authenticated:
         return redirect('dashboard')
@@ -121,16 +198,48 @@ def logout_view(request):
     logout(request)
     return redirect('login')
 
-@login_required(login_url='login')
+@admin_required
 def student_list(request):
-    students = Student.objects.select_related(
-        "user", "department", "degree_program"
-    ).order_by("-created_at")
-    return render(request, "accounts/student_list.html", {"students": students})
+    user = request.user
 
-@login_required(login_url='login')
+    if user.role == "SUPER_ADMIN":
+        students = Student.objects.select_related(
+            "user", "department", "degree_program"
+        ).order_by("-created_at")
+
+    elif user.role == "DEPARTMENT_ADMIN":
+        department = user.departmentadmin.department
+        students = Student.objects.select_related(
+            "user", "department", "degree_program"
+        ).filter(department=department).order_by("-created_at")
+
+    else:
+        messages.error(request, "Access denied.")
+        return redirect("dashboard")
+
+    return render(request, "accounts/student_list.html", {
+        "students": students
+    })
+
+@admin_required
 def student_add(request):
-    departments = Department.objects.filter(is_active=True)
+    user = request.user
+
+    if user.role == "SUPER_ADMIN":
+        departments = Department.objects.filter(is_active=True)
+        fixed_department = None
+
+    elif user.role == "DEPARTMENT_ADMIN":
+        departments = Department.objects.filter(
+            id=user.departmentadmin.department_id,
+            is_active=True
+        )
+        fixed_department = user.departmentadmin.department
+
+    else:
+        messages.error(request, "Access denied.")
+        return redirect("dashboard")
+
     programs = DegreeProgram.objects.filter(is_active=True)
 
     if request.method == "POST":
@@ -140,10 +249,16 @@ def student_add(request):
                 last_name = request.POST.get("last_name")
                 email = request.POST.get("email")
                 username = request.POST.get("username")
-                department_id = request.POST.get("department")
-                program_id = request.POST.get("degree_program")
                 enrollment_year = request.POST.get("enrollment_year")
+
+                if user.role == "SUPER_ADMIN":
+                    department_id = request.POST.get("department")
+                else:
+                    department_id = fixed_department.id  # force
+
+                program_id = request.POST.get("degree_program")
                 department = Department.objects.get(id=department_id)
+
                 student_id = generate_student_id(department, enrollment_year)
                 otp = generate_otp()
 
@@ -157,19 +272,19 @@ def student_add(request):
 
                 password = get_random_string(10)
 
-                user = User.objects.create_user(
+                user_obj = User.objects.create_user(
                     username=username,
                     email=email,
                     password=password,
                     first_name=first_name,
                     last_name=last_name,
-                    role="Student",
-                    otp = otp,
-                    otp_expiry = timezone.now() + timedelta(minutes=30)
+                    role="STUDENT",
+                    otp=otp,
+                    otp_expiry=timezone.now() + timedelta(minutes=30),
                 )
 
                 Student.objects.create(
-                    user=user,
+                    user=user_obj,
                     student_id=student_id,
                     department_id=department_id,
                     degree_program_id=program_id,
@@ -177,7 +292,7 @@ def student_add(request):
                 )
 
                 verify_link = request.build_absolute_uri(
-                    reverse("verify_otp", args=[user.id])
+                    reverse("verify_otp", args=[user_obj.id])
                 )
 
                 send_mail(
@@ -192,12 +307,11 @@ def student_add(request):
                         f"Your OTP: {otp}\n\n"
                         f"Verify your account using the link below:\n\n"
                         f"{verify_link}\n\n"
-                        f"OTP will expire in 30 minutes.\n\nAfter verfication please login and change your password.\n"
-                        f"\nRegards,\nVIT - Course Enrollment Portal"
+                        f"OTP will expire in 30 minutes.\n\n"
+                        f"Regards,\nVIT - Course Enrollment Portal"
                     ),
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[email],
-                    fail_silently=False,
                 )
 
                 messages.success(request, "Student added and email sent successfully")
@@ -213,25 +327,50 @@ def student_add(request):
         {
             "student": None,
             "departments": departments,
+            "fixed_department": fixed_department,
             "programs": programs,
         },
     )
 
-@login_required(login_url='login')
+@admin_required
 def student_edit(request, pk):
+    user = request.user
     student = get_object_or_404(Student, pk=pk)
-    departments = Department.objects.filter(is_active=True)
+
+    # Check if department admin has access to this student
+    if user.role == "DEPARTMENT_ADMIN":
+        if student.department != user.departmentadmin.department:
+            messages.error(request, "You are not allowed to edit this student.")
+            return redirect("student_list")
+
+    # Departments for form
+    if user.role == "SUPER_ADMIN":
+        departments = Department.objects.filter(is_active=True)
+        fixed_department = None
+    else:
+        departments = Department.objects.filter(
+            id=user.departmentadmin.department_id,
+            is_active=True
+        )
+        fixed_department = student.department
+
+    # Programs for form (all active, filtered later in JS)
     programs = DegreeProgram.objects.filter(is_active=True)
 
     if request.method == "POST":
+        # Update user info
         student.user.first_name = request.POST.get("first_name")
         student.user.last_name = request.POST.get("last_name")
         student.user.is_active = request.POST.get("user_is_active") == "1"
         student.user.save()
 
-        # student.student_id = request.POST.get("student_id")
-        student.department_id = request.POST.get("department")
+        # Update degree program
         student.degree_program_id = request.POST.get("degree_program")
+
+        # Only super admin can update department
+        if user.role == "SUPER_ADMIN":
+            student.department_id = request.POST.get("department")
+
         student.enrollment_year = request.POST.get("enrollment_year")
         student.is_active = request.POST.get("student_is_active") == "1"
         student.save()
@@ -245,16 +384,25 @@ def student_edit(request, pk):
         {
             "student": student,
             "departments": departments,
+            "fixed_department": fixed_department,
             "programs": programs,
         },
     )
 
-@login_required(login_url='login')
+@admin_required
 def student_delete(request, pk):
+    user = request.user
     student = get_object_or_404(Student, pk=pk)
+
+    if user.role == "DEPARTMENT_ADMIN":
+        if student.department != user.departmentadmin.department:
+            messages.error(request, "You are not allowed to delete this student.")
+            return redirect("student_list")
+
     student.user.delete()
     messages.success(request, "Student deleted successfully")
     return redirect("student_list")
+
 
 def generate_student_id(department, enrollment_year):
     prefix = f"{enrollment_year}-{department.code}-"
@@ -286,6 +434,7 @@ def get_degree_programs(request):
 def generate_otp():
     return str(random.randint(100000, 999999))
 
+@guest_only
 def verify_otp(request, user_id):
     user = get_object_or_404(User, id=user_id)
 
@@ -322,6 +471,7 @@ def verify_otp(request, user_id):
 
     return render(request, "accounts/verify_otp.html", {"user": user})
 
+@guest_only
 def resend_otp(request, user_id):
     user = get_object_or_404(User, id=user_id)
 
@@ -363,6 +513,7 @@ def resend_otp(request, user_id):
     messages.success(request, "A new OTP has been sent to your email.")
     return redirect("verify_otp", user_id=user.id)
 
+@guest_only
 def forgot_password(request):
     if request.method == "POST":
         email = request.POST.get("email")
@@ -404,6 +555,7 @@ def forgot_password(request):
 
     return render(request, "accounts/forgot_password.html")
 
+@guest_only
 def reset_password(request, user_id):
     user = get_object_or_404(User, id=user_id)
 
@@ -438,7 +590,7 @@ def reset_password(request, user_id):
 
     return render(request, "accounts/reset_password.html", {"user": user})
 
-@login_required(login_url='login')
+@super_admin_required
 def department_admin_list(request):
     admins = (
         DepartmentAdmin.objects
@@ -452,7 +604,7 @@ def department_admin_list(request):
         {"admins": admins},
     )
 
-@login_required(login_url='login')
+@super_admin_required
 def department_admin_add(request):
     departments = Department.objects.filter(is_active=True)
 
@@ -529,7 +681,7 @@ def department_admin_add(request):
         {"departments": departments},
     )
 
-@login_required(login_url='login')
+@super_admin_required
 def department_admin_edit(request, pk):
     admin = get_object_or_404(DepartmentAdmin, pk=pk)
     departments = Department.objects.filter(is_active=True)
@@ -555,7 +707,7 @@ def department_admin_edit(request, pk):
         },
     )
 
-@login_required(login_url='login')
+@super_admin_required
 def department_admin_delete(request, pk):
     admin = get_object_or_404(DepartmentAdmin, pk=pk)
     admin.user.delete()

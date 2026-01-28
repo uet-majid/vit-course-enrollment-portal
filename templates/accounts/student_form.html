@@ -95,7 +95,7 @@
             />
             {% endif %}
           </div>
-
+          {% if request.user.role == "SUPER_ADMIN" %}
           <div class="mb-3">
             <label class="fw-semibold">Department</label>
             <select
@@ -114,6 +114,18 @@
                     {% endfor %}
             </select>
           </div>
+          {% else %}
+          <!-- Department Admin -->
+          <input type="hidden" id="department_id" name="department" value="{{ departments.0.id }}">
+
+          <div class="mb-3">
+              <label>Department</label>
+              <input type="text"
+                     class="form-control"
+                     value="{{ departments.0.name }}"
+                     disabled>
+          </div>
+          {% endif %}
 
 
           <div class="mb-3">
@@ -184,7 +196,9 @@
 </div>
 {% block extra_js %}
 <script>
+  document.addEventListener("DOMContentLoaded", function () {
   const departmentSelect = document.getElementById("department");
+  const hiddenDepartment = document.getElementById("department_id");
   const programSelect = document.getElementById("degree_program");
 
   // values from backend (empty on add, filled on edit)
@@ -220,15 +234,23 @@
       });
   }
 
-  // On department change (add + edit)
-  departmentSelect.addEventListener("change", function () {
-    loadDegreePrograms(this.value, null);
-  });
+  // Super admin: on department change
+  if (departmentSelect) {
+    departmentSelect.addEventListener("change", function () {
+      loadDegreePrograms(this.value, null);
+    });
 
-  // On edit page load
-  if (selectedDepartmentId) {
-    loadDegreePrograms(selectedDepartmentId, selectedProgramId);
+    // On edit page load for super admin
+    if (selectedDepartmentId) {
+      loadDegreePrograms(selectedDepartmentId, selectedProgramId);
+    }
   }
+
+  // Department admin: auto-load on page load
+  if (hiddenDepartment) {
+    loadDegreePrograms(hiddenDepartment.value, selectedProgramId);
+  }
+});
 </script>
 
 {% endblock %} {% endblock %}

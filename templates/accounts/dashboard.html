@@ -26,50 +26,231 @@
 {% endfor %} {% endif %}
 <!-- [Dashboard Mini Cards] start -->
 <div class="row g-3">
-  <!-- Total Students -->
+  {% if semester_name %}
+<!-- Current Semester -->
+<div class="col-xxl-3 col-md-6">
+  <div class="card card-body bg-warning text-white position-relative">
+    <h3 class="text-reset">{{ semester_name }}</h3>
+    <span class="mt-2">{{ semester_start }} → {{ semester_end }}</span>
+    <div class="position-absolute top-50 end-0 translate-middle opacity-25">
+      <i class="feather-calendar fs-1"></i>
+    </div>
+  </div>
+</div>
+
+<!-- Enrollment Window -->
+<div class="col-xxl-3 col-md-6">
+  <div class="card card-body bg-secondary text-white position-relative">
+    <h3 class="text-reset">Enrollment Period</h3>
+    <span class="mt-2">{{ enroll_start }} → {{ enroll_end }}</span>
+    <div class="position-absolute top-50 end-0 translate-middle opacity-25">
+      <i class="feather-calendar fs-1"></i>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+  {% if user.role == "SUPER_ADMIN" %}
+    <!-- Total Students -->
+    <div class="col-xxl-3 col-md-6">
+      <div class="card card-body bg-primary text-white position-relative">
+        <h3 class="text-reset">{{ total_students }}</h3>
+        <span class="mt-2">Total Students</span>
+        <div class="position-absolute top-50 end-0 translate-middle opacity-25">
+          <i class="feather-users fs-1"></i>
+        </div>
+      </div>
+    </div>
+
+  <!-- Active Students -->
   <div class="col-xxl-3 col-md-6">
-    <div class="card card-body bg-primary text-white position-relative">
-      <h3 class="text-reset">1,250</h3>
-      <span class="mt-2">Total Students</span>
+    <div class="card card-body bg-success text-white position-relative">
+      <h3 class="text-reset">{{ active_students }}</h3>
+      <span class="mt-2">Active Students</span>
+      <div class="position-absolute top-50 end-0 translate-middle opacity-25">
+        <i class="feather-user-check fs-1"></i>
+      </div>
+    </div>
+  </div>
+
+  <!-- Inactive Students -->
+  <div class="col-xxl-3 col-md-6">
+    <div class="card card-body bg-danger text-white position-relative">
+      <h3 class="text-reset">{{ inactive_students }}</h3>
+      <span class="mt-2">Inactive Students</span>
+      <div class="position-absolute top-50 end-0 translate-middle opacity-25">
+        <i class="feather-user-x fs-1"></i>
+      </div>
+    </div>
+  </div>
+
+    <!-- Departments -->
+    <div class="col-xxl-3 col-md-6">
+      <div class="card card-body bg-warning text-white position-relative">
+        <h3 class="text-reset">{{ total_departments }}</h3>
+        <span class="mt-2">Departments</span>
+        <div class="position-absolute top-50 end-0 translate-middle opacity-25">
+          <i class="feather-grid fs-1"></i>
+        </div>
+      </div>
+    </div>
+
+  <!-- Department Admin Count -->
+  <div class="col-xxl-3 col-md-6">
+    <div class="card card-body bg-info text-white position-relative">
+      <h3 class="text-reset">{{ department_admin_count }}</h3>
+      <span class="mt-2">Department Admins</span>
       <div class="position-absolute top-50 end-0 translate-middle opacity-25">
         <i class="feather-users fs-1"></i>
       </div>
     </div>
   </div>
 
-  <!-- Departments -->
+    <!-- Degree Programs -->
+    <div class="col-xxl-3 col-md-6">
+      <div class="card card-body bg-secondary text-white position-relative">
+        <h3 class="text-reset">{{ total_degree_programs }}</h3>
+        <span class="mt-2">Degree Programs</span>
+        <div class="position-absolute top-50 end-0 translate-middle opacity-25">
+          <i class="feather-award fs-1"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Total Courses -->
+    <div class="col-xxl-3 col-md-6">
+      <div class="card card-body bg-dark text-white position-relative">
+        <h3 class="text-reset">{{ total_courses }}</h3>
+        <span class="mt-2">Total Courses</span>
+        <div class="position-absolute top-50 end-0 translate-middle opacity-25">
+          <i class="feather-book-open fs-1"></i>
+        </div>
+      </div>
+    </div>
+
+  {% elif user.role == "DEPARTMENT_ADMIN" %}
+    <!-- Department Name -->
+    <div class="col-xxl-3 col-md-6">
+      <div class="card card-body bg-dark text-white position-relative">
+        <h3 class="text-reset">{{ department_name }}</h3>
+        <span class="mt-2">My Department</span>
+        <div class="position-absolute top-50 end-0 translate-middle opacity-25">
+          <i class="feather-grid fs-1"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Total Students in Department -->
+    <div class="col-xxl-3 col-md-6">
+      <div class="card card-body bg-primary text-white position-relative">
+        <h3 class="text-reset">{{ total_students }}</h3>
+        <span class="mt-2">Total Students</span>
+        <div class="position-absolute top-50 end-0 translate-middle opacity-25">
+          <i class="feather-users fs-1"></i>
+        </div>
+      </div>
+    </div>
+
+  <!-- Active Students -->
   <div class="col-xxl-3 col-md-6">
     <div class="card card-body bg-success text-white position-relative">
-      <h3 class="text-reset">12</h3>
-      <span class="mt-2">Departments</span>
+      <h3 class="text-reset">{{ active_students }}</h3>
+      <span class="mt-2">Active Students</span>
       <div class="position-absolute top-50 end-0 translate-middle opacity-25">
-        <i class="feather-grid fs-1"></i>
+        <i class="feather-user-check fs-1"></i>
       </div>
     </div>
   </div>
 
-  <!-- Degree Programs -->
-  <div class="col-xxl-3 col-md-6">
-    <div class="card card-body bg-warning text-white position-relative">
-      <h3 class="text-reset">28</h3>
-      <span class="mt-2">Degree Programs</span>
-      <div class="position-absolute top-50 end-0 translate-middle opacity-25">
-        <i class="feather-award fs-1"></i>
-      </div>
-    </div>
-  </div>
-
-  <!-- Total Courses -->
+  <!-- Inactive Students -->
   <div class="col-xxl-3 col-md-6">
     <div class="card card-body bg-danger text-white position-relative">
-      <h3 class="text-reset">340</h3>
-      <span class="mt-2">Total Courses</span>
+      <h3 class="text-reset">{{ inactive_students }}</h3>
+      <span class="mt-2">Inactive Students</span>
+      <div class="position-absolute top-50 end-0 translate-middle opacity-25">
+        <i class="feather-user-x fs-1"></i>
+      </div>
+    </div>
+  </div>
+
+    <!-- Degree Programs in Department -->
+    <div class="col-xxl-3 col-md-6">
+      <div class="card card-body bg-info text-white position-relative">
+        <h3 class="text-reset">{{ total_degree_programs }}</h3>
+        <span class="mt-2">Degree Programs</span>
+        <div class="position-absolute top-50 end-0 translate-middle opacity-25">
+          <i class="feather-award fs-1"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Courses in Department -->
+    <div class="col-xxl-3 col-md-6">
+      <div class="card card-body bg-danger text-white position-relative">
+        <h3 class="text-reset">{{ total_courses }}</h3>
+        <span class="mt-2">Courses</span>
+        <div class="position-absolute top-50 end-0 translate-middle opacity-25">
+          <i class="feather-book-open fs-1"></i>
+        </div>
+      </div>
+    </div>
+
+  {% elif user.role == "STUDENT" %}
+    <!-- Department -->
+    <div class="col-xxl-3 col-md-6">
+      <div class="card card-body bg-success text-white position-relative">
+        <h3 class="text-reset">{{ department_name }}</h3>
+        <span class="mt-2">Department</span>
+        <div class="position-absolute top-50 end-0 translate-middle opacity-25">
+          <i class="feather-grid fs-1"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Degree Program -->
+    <div class="col-xxl-3 col-md-6">
+      <div class="card card-body bg-warning text-white position-relative">
+        <h3 class="text-reset">{{ degree_program_name }}</h3>
+        <span class="mt-2">Degree Program</span>
+        <div class="position-absolute top-50 end-0 translate-middle opacity-25">
+          <i class="feather-award fs-1"></i>
+        </div>
+      </div>
+    </div>
+
+    <!-- Enrollment Year -->
+    <div class="col-xxl-3 col-md-6">
+      <div class="card card-body bg-primary text-white position-relative">
+        <h3 class="text-reset">{{ enrollment_year }}</h3>
+        <span class="mt-2">Enrollment Year</span>
+        <div class="position-absolute top-50 end-0 translate-middle opacity-25">
+          <i class="feather-calendar fs-1"></i>
+        </div>
+      </div>
+    </div>
+
+  <!-- Enrolled Courses -->
+  <div class="col-xxl-3 col-md-6">
+    <div class="card card-body bg-black text-white position-relative">
+      <h3 class="text-reset">{{ enrolled_courses_count }}</h3>
+      <span class="mt-2">Enrolled Courses</span>
       <div class="position-absolute top-50 end-0 translate-middle opacity-25">
         <i class="feather-book-open fs-1"></i>
       </div>
     </div>
   </div>
-</div>
-<!-- [Dashboard Mini Cards] end -->
 
+    <!-- Total Courses Available -->
+    <div class="col-xxl-3 col-md-6">
+      <div class="card card-body bg-danger text-white position-relative">
+        <h3 class="text-reset">{{ total_courses }}</h3>
+        <span class="mt-2">Courses in Department</span>
+        <div class="position-absolute top-50 end-0 translate-middle opacity-25">
+          <i class="feather-book-open fs-1"></i>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</div>
 {% endblock %}
+

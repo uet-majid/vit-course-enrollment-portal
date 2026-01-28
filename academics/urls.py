@@ -21,4 +21,10 @@ urlpatterns = [
     path("semesters/add/", views.semester_add, name="semester_add"),
     path("semesters/edit/<int:pk>/", views.semester_edit, name="semester_edit"),
     path("semesters/delete/<int:pk>/", views.semester_delete, name="semester_delete"),
+
+    path("course-offerings/", views.course_offering_list, name="course_offering_list"),
+    path("course-offerings/add/", views.course_offering_add, name="course_offering_add"),
+    path("course-offerings/<int:pk>/edit/", views.course_offering_edit, name="course_offering_edit"),
+    path("course-offerings/<int:pk>/delete/", views.course_offering_delete, name="course_offering_delete"),
+
 ]

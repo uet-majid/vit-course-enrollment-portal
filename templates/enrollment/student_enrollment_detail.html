@@ -1,0 +1,67 @@
+{% extends "base/base.html" %}
+
+{% block title %}Enrollment History{% endblock %}
+{% block page_title %}Enrollment History{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item">
+  <a href="{% url 'course_enrollment_list' %}">Course Enrollments</a>
+</li>
+<li class="breadcrumb-item active">Student History</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="card mb-3">
+  <div class="card-body">
+    <h6 class="fw-bold mb-1">
+      {{ student.student_id }} —
+      {{ student.user.get_full_name }}
+    </h6>
+    <p class="text-muted mb-0">
+      Department: {{ student.department.name }} |
+      Degree: {{ student.degree_program.name }}
+    </p>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body table-responsive">
+    <table class="table table-striped align-middle">
+      <thead>
+        <tr>
+          <th>Semester</th>
+          <th>Course Code</th>
+          <th>Course Name</th>
+          <th>Credits</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in enrollments %}
+        <tr>
+          <td>{{ e.course_offering.semester.name }}</td>
+          <td>{{ e.course_offering.course.course_code }}</td>
+          <td>{{ e.course_offering.course.course_name }}</td>
+          <td>{{ e.course_offering.course.credit_points }}</td>
+          <td>
+            <span
+              class="badge {% if e.status == 'ENROLLED' %}bg-success{% else %}bg-danger{% endif %}"
+            >
+              {{ e.get_status_display }}
+            </span>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="text-center text-muted">
+            No enrollment history available
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}
