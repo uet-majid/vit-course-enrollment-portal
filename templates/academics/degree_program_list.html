@@ -55,7 +55,7 @@
                 <td>{{ forloop.counter }}</td>
                 <td class="fw-semibold">{{ program.name }}</td>
                 <td>{{ program.level }}</td>
-                <td>{{ program.duration_years }}</td>
+                <td><span class="badge bg-primary">{{ program.duration_years }}</span></td>
                 <td>{{ program.department.name }}</td>
                 <td>
                   {% if program.is_active %}

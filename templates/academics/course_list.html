@@ -55,8 +55,8 @@
                 <td class="fw-semibold">{{ course.course_name }}</td>
                 <td>{{ course.course_code }}</td>
                 <td>{{ course.department.name }}</td>
-                <td>{{ course.credit_points }}</td>
-                <td>{{ course.max_capacity }}</td>
+                <td><span class="badge bg-primary"> {{ course.credit_points }}</span></td>
+                <td><span class="badge bg-primary">{{ course.max_capacity }}</span></td>
                 <td>
                   {% if course.is_active %}
                   <span class="badge bg-success">Active</span>

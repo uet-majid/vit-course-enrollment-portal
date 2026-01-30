@@ -52,7 +52,7 @@
                 <td>{{ offering.course.course_name }}</td>
                 <td>{{ offering.course.department.name }}</td>
                 <td>{{ offering.semester.name }}</td>
-                <td>{{ offering.current_enrollment }}</td>
+                <td><span class="badge bg-primary">{{ offering.current_enrollment }} / {{ offering.course.max_capacity }}</span></td>
                 <td>
                   {% if offering.is_active %}
                   <span class="badge bg-success">Active</span>
