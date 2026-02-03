@@ -1,5 +1,5 @@
 {% extends "base/base.html" %}
-
+{% load dict_extras %}
 {% block title %}Student Enrollment Details{% endblock %}
 {% block page_title %}Student Enrollment Details{% endblock %}
 
@@ -19,26 +19,34 @@
         <!-- Header -->
         <div class="d-flex justify-content-between align-items-center p-4 border-bottom">
           <div>
-            <h5 class="mb-0 fw-bold">Student Enrollments</h5>
-            {% if active_semester %}
+            <h5 class="fw-bold">Student Enrollments</h5>
             <small class="text-muted">
-              {{ active_semester.name }}
-              ({{ active_semester.start_date }} – {{ active_semester.end_date }})
+              {{ student.student_id }} — {{ student.user.get_full_name }}
+              <br>
+              Department: {{ student.department.name }} |
+              Degree: {{ student.degree_program.name }}
             </small>
-            {% endif %}
           </div>
         </div>
 
-        <!-- Student Info -->
+        {% if active_semester %}
         <div class="px-4 pt-3 border-bottom">
-          <p class="mb-0 fw-semibold">
-            {{ student.student_id }} — {{ student.user.get_full_name }}
-          </p>
-          <small class="text-muted">
-            Department: {{ student.department.name }} |
-            Degree: {{ student.degree_program.name }}
-          </small>
+          <div class="fw-semibold mb-2 d-flex justify-content-between">
+            <h6>
+              Current Semester {{ active_semester.name }}
+              <small class="text-muted">
+                ({{ active_semester.start_date }} – {{ active_semester.end_date }})
+              </small>
+            </h6>
+            <span class="fw-semibold">
+              Credits:
+              <span class="text-primary">
+                {{ current_semester_credits }} / {{ student.degree_program.max_credits_per_semester }}
+              </span>
+            </span>
+          </div>
         </div>
+        {% endif %}
 
         <!-- Current Semester Table -->
         <div class="table-responsive">
@@ -94,13 +102,20 @@
           {% if past_enrollments %}
           {% for semester, enrollments in past_enrollments.items %}
           <div class="mb-4">
-            <h6 class="fw-semibold mt-2 mb-2 px-4">
+            <div class="fw-semibold mt-3 px-4 d-flex justify-content-between">
+              <h6>
               {{ semester.name }}
               <small class="text-muted">
                 ({{ semester.start_date }} – {{ semester.end_date }})
               </small>
             </h6>
-
+            <span class="fw-semibold">
+              Credits:
+              <span class="text-primary">
+                {{ past_semester_credits|get_item:semester.id }} / {{ student.degree_program.max_credits_per_semester }}
+              </span>
+            </span>
+          </div>
             <div class="table-responsive">
               <table class="table table-hover align-middle mb-0 historyTable">
                 <thead class="table-light">

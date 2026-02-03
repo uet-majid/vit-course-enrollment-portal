@@ -1,4 +1,4 @@
-from django.db.models import Count, Q, Value
+from django.db.models import Count, Q, Value, Sum, F, Value, IntegerField
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from enrollment.models import Enrollment
@@ -9,6 +9,7 @@ from django.utils.timezone import now
 from django.db import transaction
 from datetime import date
 from django.utils import timezone
+from django.db.models.functions import Coalesce
 
 @admin_required
 def enrollment_list(request):
@@ -29,8 +30,7 @@ def enrollment_list(request):
         department = DepartmentAdmin.objects.get(user=user).department
         students = students.filter(department=department)
 
-    # Annotate enrolled count (current or selected semester)
-    semester = None
+    # Resolve semester
     if semester_id:
         semester = Semester.objects.filter(id=semester_id).first()
     else:
@@ -43,11 +43,25 @@ def enrollment_list(request):
                 filter=Q(
                     enrollment__course_offering__semester=semester,
                     enrollment__status="ENROLLED"
-                )
-            )
+                ),
+            ),
+            enrolled_credits=Coalesce(
+                Sum(
+                    "enrollment__course_offering__course__credit_points",
+                    filter=Q(
+                        enrollment__course_offering__semester=semester,
+                        enrollment__status="ENROLLED"
+                    ),
+                ),
+                Value(0),
+                output_field=IntegerField(),
+            ),
         )
     else:
-        students = students.annotate(enrolled_count=Value(0))
+        students = students.annotate(
+            enrolled_count=Value(0, output_field=IntegerField()),
+            enrolled_credits=Value(0, output_field=IntegerField()),
+        )
 
     return render(
         request,
@@ -69,7 +83,7 @@ def student_enrollment_detail(request, student_id):
 
     active_semester = Semester.objects.filter(is_active=True).first()
 
-    # Current semester (ALL statuses for admin)
+    # Current semester enrollments (ALL statuses for admin)
     current_enrollments = Enrollment.objects.select_related(
         "course_offering__course",
         "course_offering__semester",
@@ -78,8 +92,20 @@ def student_enrollment_detail(request, student_id):
         course_offering__semester=active_semester
     )
 
-    # Past semesters only
+    # Current semester total credits (ENROLLED only)
+    current_semester_credits = current_enrollments.filter(
+        status="ENROLLED"
+    ).aggregate(
+        total=Coalesce(
+            Sum("course_offering__course__credit_points"),
+            0
+        )
+    )["total"]
+
+    # Past enrollments grouped by semester
     past_enrollments = {}
+    past_semester_credits = {}
+
     past_records = Enrollment.objects.select_related(
         "course_offering__course",
         "course_offering__semester",
@@ -93,6 +119,15 @@ def student_enrollment_detail(request, student_id):
         semester = e.course_offering.semester
         past_enrollments.setdefault(semester, []).append(e)
 
+    # Calculate semester-wise credits
+    for semester, enrollments in past_enrollments.items():
+        total_credits = sum(
+            e.course_offering.course.credit_points
+            for e in enrollments
+            if e.status == "ENROLLED"
+        )
+        past_semester_credits[semester.id] = total_credits
+
     return render(
         request,
         "enrollment/student_enrollment_detail.html",
@@ -100,21 +135,25 @@ def student_enrollment_detail(request, student_id):
             "student": student,
             "active_semester": active_semester,
             "current_enrollments": current_enrollments,
+            "current_semester_credits": current_semester_credits,
             "past_enrollments": past_enrollments,
+            "past_semester_credits": past_semester_credits,
         },
     )
-
 
 @student_required
 def student_my_courses(request):
     student = request.user.student
 
+    # Get the active semester
     active_semester = Semester.objects.filter(is_active=True).first()
 
+    # Initialize current and past enrollments
     current_enrollments = []
     past_enrollments = {}
 
     if active_semester:
+        # Current semester enrollments
         current_enrollments = Enrollment.objects.select_related(
             "course_offering__course",
             "course_offering__semester",
@@ -123,6 +162,16 @@ def student_my_courses(request):
             course_offering__semester=active_semester,
         ).order_by("-enrolled_at")
 
+        # Calculate total credits for current semester
+        current_semester_credits = sum(
+            e.course_offering.course.credit_points
+            for e in current_enrollments
+            if e.status == "ENROLLED"
+        )
+    else:
+        current_semester_credits = 0
+
+    # Past enrollments (excluding current semester)
     past_records = Enrollment.objects.select_related(
         "course_offering__course",
         "course_offering__semester",
@@ -134,9 +183,25 @@ def student_my_courses(request):
         "-course_offering__semester__start_date"
     )
 
+    # Group past enrollments by semester and calculate semester-wise credits
     for e in past_records:
         semester = e.course_offering.semester
-        past_enrollments.setdefault(semester, []).append(e)
+
+        if semester not in past_enrollments:
+            past_enrollments[semester] = {
+                "enrollments": [],
+                "total_credits": 0,
+            }
+
+        past_enrollments[semester]["enrollments"].append(e)
+
+        if e.status == "ENROLLED":
+            past_enrollments[semester]["total_credits"] += (
+                e.course_offering.course.credit_points
+            )
+
+    # Maximum credits allowed per semester (from degree program)
+    max_credits = student.degree_program.max_credits_per_semester
 
     return render(
         request,
@@ -145,7 +210,9 @@ def student_my_courses(request):
             "student": student,
             "active_semester": active_semester,
             "current_enrollments": current_enrollments,
+            "current_semester_credits": current_semester_credits,
             "past_enrollments": past_enrollments,
+            "max_credits": max_credits,
         },
     )
 
@@ -168,6 +235,11 @@ def student_course_enrollment(request):
         messages.error(request, "Enrollment window is closed.")
         return redirect("dashboard")
 
+    degree = student.degree_program
+    max_credits = degree.max_credits_per_semester
+
+    enrolled_credits = Enrollment.get_enrolled_credits(student, semester)
+
     enrolled_ids = Enrollment.objects.filter(
         student=student,
         course_offering__semester=semester,
@@ -189,6 +261,18 @@ def student_course_enrollment(request):
             id=offering_id,
             semester=semester
         )
+
+        course_credits = offering.course.credit_points
+
+        # CREDIT LIMIT CHECK
+        if enrolled_credits + course_credits > max_credits:
+            messages.error(
+                request,
+                f"Credit limit exceeded. "
+                f"Allowed: {max_credits}, "
+                f"Current: {enrolled_credits}"
+            )
+            return redirect("student_course_enrollment")
 
         if offering.current_enrollment >= offering.course.max_capacity:
             messages.error(request, "Course capacity is full.")
@@ -221,6 +305,8 @@ def student_course_enrollment(request):
             "offerings": offerings,
             "semester": semester,
             "enrolled_ids": enrolled_ids,
+            "enrolled_credits": enrolled_credits,
+            "max_credits": max_credits,
         },
     )
 

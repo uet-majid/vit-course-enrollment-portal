@@ -240,6 +240,26 @@
     </div>
   </div>
 
+  <div class="col-xxl-3 col-md-6">
+  <div class="card card-body bg-info text-white position-relative">
+    <h3 class="text-reset">{{ current_credits }} / {{ degree_program.max_credits_per_semester|default:"—" }}</h3>
+    <span class="mt-2">Current Semester Credits</span>
+    <div class="position-absolute top-50 end-0 translate-middle opacity-25">
+      <i class="feather-layers fs-1"></i>
+    </div>
+  </div>
+</div>
+
+  <div class="col-xxl-3 col-md-6">
+  <div class="card card-body bg-secondary text-white position-relative">
+    <h3 class="text-reset">{{ completed_credits }} </h3>
+    <span class="mt-2">Completed Credits</span>
+    <div class="position-absolute top-50 end-0 translate-middle opacity-25">
+      <i class="feather-check-circle fs-1"></i>
+    </div>
+  </div>
+</div>
+
     <!-- Total Courses Available -->
     <div class="col-xxl-3 col-md-6">
       <div class="card card-body bg-danger text-white position-relative">

@@ -47,6 +47,7 @@
             <th>Name</th>
             <th>Department</th>
             <th>Enrolled Courses</th>
+            <th>Credits</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -60,6 +61,11 @@
             <td>
               <span class="badge bg-primary">
                 {{ s.enrolled_count }}
+              </span>
+            </td>
+            <td>
+              <span class="badge bg-info">
+                {{ s.enrolled_credits }} / {{ s.degree_program.max_credits_per_semester }}
               </span>
             </td>
             <td>

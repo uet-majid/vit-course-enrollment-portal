@@ -41,6 +41,16 @@
             </select>
           </div>
 
+            <div class="mb-3">
+            <label class="fw-semibold">Level</label>
+            <select name="level" class="form-select" required>
+                <option value="">Select Level</option>
+                <option value="UG" {% if program and program.level == "UG" %}selected{% endif %}>UG</option>
+                <option value="PG" {% if program and program.level == "PG" %}selected{% endif %}>PG</option>
+                <option value="PhD" {% if program and program.level == "PhD" %}selected{% endif %}>PhD</option>
+            </select>
+          </div>
+
           <div class="mb-3">
             <label class="fw-semibold">Program Name</label>
             <input
@@ -53,15 +63,22 @@
             />
           </div>
 
-          <div class="mb-3">
-            <label class="fw-semibold">Level</label>
-            <select name="level" class="form-select" required>
-                <option value="">Select Level</option>
-                <option value="UG" {% if program and program.level == "UG" %}selected{% endif %}>UG</option>
-                <option value="PG" {% if program and program.level == "PG" %}selected{% endif %}>PG</option>
-                <option value="PhD" {% if program and program.level == "PhD" %}selected{% endif %}>PhD</option>
-            </select>
-          </div>
+            <div class="mb-3">
+              <label class="fw-semibold">Max Credits Per Semester</label>
+              <input
+                type="number"
+                name="max_credits_per_semester"
+                class="form-control"
+                placeholder="e.g. 24"
+                min="1"
+                value="{{ program.max_credits_per_semester|default:'' }}"
+                required
+              />
+              <small class="text-muted">
+                Maximum credits a student can enroll in one semester
+              </small>
+            </div>
+
 
           <div class="mb-3">
             <label class="fw-semibold">Duration (Years)</label>

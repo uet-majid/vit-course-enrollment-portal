@@ -15,18 +15,24 @@
 
         <!-- Header -->
         <div
-          class="d-flex justify-content-between align-items-center p-4 border-bottom"
+          class="p-4 border-bottom"
         >
-          <div>
+          <div class="d-flex justify-content-between">
             <h5 class="mb-1 fw-bold">
               Available Courses – {{ semester.name }}
             </h5>
-            <small class="text-muted">
-              Enrollment Window:
-              {{ semester.enrollment_open_date }} –
-              {{ semester.enrollment_close_date }}
-            </small>
+            <span class="fw-semibold">
+              Credits:
+              <span class="text-primary">
+                {{ enrolled_credits }} / {{ max_credits }}
+              </span>
+            </span>
           </div>
+          <small class="text-muted">
+            Enrollment Window:
+            {{ semester.enrollment_open_date }} –
+            {{ semester.enrollment_close_date }}
+          </small>
         </div>
 
         <!-- Messages -->

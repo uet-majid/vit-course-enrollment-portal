@@ -74,25 +74,50 @@ def dashboard(request):
 
     elif user.role == "STUDENT":
         student = user.student
-
         active_semester = Semester.objects.filter(is_active=True).first()
 
         enrolled_courses_count = 0
+        current_credits = 0
+        completed_credits = 0
+
         if active_semester:
-            enrolled_courses_count = Enrollment.objects.filter(
+            enrolled_qs = Enrollment.objects.filter(
                 student=student,
                 course_offering__semester=active_semester,
                 status="ENROLLED"
-            ).count()
+            ).select_related("course_offering__course")
+
+            enrolled_courses_count = enrolled_qs.count()
+
+            current_credits = (
+                enrolled_qs.aggregate(
+                    total=Sum("course_offering__course__credit_points")
+                )["total"] or 0
+            )
+
+        # Completed credits (all past semesters)
+        completed_credits = (
+            Enrollment.objects.filter(
+                student=student,
+                status="ENROLLED"
+            ).exclude(course_offering__semester=active_semester)
+            .select_related("course_offering__course")
+            .aggregate(
+                total=Sum("course_offering__course__credit_points")
+            )["total"] or 0
+        )
 
         context.update({
             "department_name": student.department.name,
             "degree_program_name": student.degree_program.name,
+            "degree_program": student.degree_program,
             "enrollment_year": student.enrollment_year,
             "total_courses": Course.objects.filter(
                 department=student.department
             ).count(),
             "enrolled_courses_count": enrolled_courses_count,
+            "current_credits": current_credits,
+            "completed_credits": completed_credits,
         })
 
     return render(request, 'accounts/dashboard.html', context)

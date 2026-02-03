@@ -43,6 +43,7 @@
                 <th>Program Name</th>
                 <th>Level</th>
                 <th>Duration (Years)</th>
+                <th>Max Credits / Semester</th>
                 <th>Department</th>
                 <th>Status</th>
                 <th>Created At</th>
@@ -56,6 +57,11 @@
                 <td class="fw-semibold">{{ program.name }}</td>
                 <td>{{ program.level }}</td>
                 <td><span class="badge bg-primary">{{ program.duration_years }}</span></td>
+                <td>
+                  <span class="badge bg-info" title="Maximum credits a student can enroll in one semester">
+                    {{ program.max_credits_per_semester }}
+                  </span>
+                </td>
                 <td>{{ program.department.name }}</td>
                 <td>
                   {% if program.is_active %}

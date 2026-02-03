@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from academics.models import Department, DegreeProgram, Course, Semester, CourseOffering
 from accounts.decorators import guest_only, student_required, super_admin_required, department_admin_required, admin_required
+from django.utils import timezone
 
 @super_admin_required
 def department_list(request):
@@ -73,15 +74,19 @@ def degree_program_add(request):
             name=request.POST.get("name"),
             level=request.POST.get("level"),
             duration_years=request.POST.get("duration_years"),
+            max_credits_per_semester=request.POST.get("max_credits_per_semester"),
             is_active=request.POST.get("is_active") == "1",
         )
+
         messages.success(request, "Degree program added successfully")
         return redirect("degree_program_list")
 
     return render(
         request,
         "academics/degree_program_form.html",
-        {"departments": departments},
+        {
+            "departments": departments
+        },
     )
 
 @super_admin_required
@@ -94,6 +99,7 @@ def degree_program_edit(request, pk):
         program.name = request.POST.get("name")
         program.level = request.POST.get("level")
         program.duration_years = request.POST.get("duration_years")
+        program.max_credits_per_semester = request.POST.get("max_credits_per_semester")
         program.is_active = request.POST.get("is_active") == "1"
         program.save()
 
@@ -239,6 +245,27 @@ def semester_list(request):
 @super_admin_required
 def semester_add(request):
     if request.method == "POST":
+        today = timezone.now().date()
+
+        active_semester = Semester.objects.filter(is_active=True).first()
+
+        # If there is already an active semester
+        if active_semester:
+            # If the active semester has NOT ended
+            if active_semester.end_date >= today:
+                messages.error(
+                    request,
+                    f"Cannot add new semester. "
+                    f"The current active semester '{active_semester.name}' "
+                    f"ends on {active_semester.end_date}."
+                )
+                return redirect("semester_list")
+
+            # If the active semester HAS ended
+            active_semester.is_active = False
+            active_semester.save(update_fields=["is_active"])
+
+        # Create the new semester
         Semester.objects.create(
             name=request.POST.get("name"),
             start_date=request.POST.get("start_date"),
@@ -247,6 +274,7 @@ def semester_add(request):
             enrollment_close_date=request.POST.get("enrollment_close_date"),
             is_active=request.POST.get("is_active") == "1",
         )
+
         messages.success(request, "Semester added successfully")
         return redirect("semester_list")
 
@@ -257,20 +285,39 @@ def semester_edit(request, pk):
     semester = get_object_or_404(Semester, pk=pk)
 
     if request.method == "POST":
+        wants_active = request.POST.get("is_active") == "1"
+
+        # If admin is trying to activate this semester
+        if wants_active:
+            other_active_semester = Semester.objects.filter(
+                is_active=True
+            ).exclude(pk=semester.pk).first()
+
+            if other_active_semester:
+                messages.error(
+                    request,
+                    f"Cannot activate this semester. "
+                    f"'{other_active_semester.name}' is already active."
+                )
+                return redirect("semester_edit", pk=semester.pk)
+
+        # Update fields
         semester.name = request.POST.get("name")
         semester.start_date = request.POST.get("start_date")
         semester.end_date = request.POST.get("end_date")
         semester.enrollment_open_date = request.POST.get("enrollment_open_date")
         semester.enrollment_close_date = request.POST.get("enrollment_close_date")
-        semester.is_active = request.POST.get("is_active") == "1"
+        semester.is_active = wants_active
         semester.save()
 
         messages.success(request, "Semester updated successfully")
         return redirect("semester_list")
 
-    return render(request, "academics/semester_form.html", {
-        "semester": semester
-    })
+    return render(
+        request,
+        "academics/semester_form.html",
+        {"semester": semester},
+    )
 
 @super_admin_required
 def semester_delete(request, pk):

@@ -13,6 +13,10 @@ class Department(models.Model):
 class DegreeProgram(models.Model):
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
     name = models.CharField(max_length=100)
+    max_credits_per_semester = models.PositiveIntegerField(
+        default=24,
+        help_text="Maximum credits a student can enroll in per semester"
+    )
     level = models.CharField(max_length=50)
     duration_years = models.PositiveIntegerField()
     is_active = models.BooleanField(default=True)
